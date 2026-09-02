@@ -50,7 +50,6 @@ type AppData = {
   info: string;
   messages: string;
   settings: string;
-
   cenaSardaAttiva: string;
   cenaSardaTitolo: string;
   cenaSardaDescrizione: string;
@@ -169,7 +168,7 @@ const defaultData: AppData = {
 };
 
 const splitLines = (value: string): string[] => {
-  return value
+  return String(value || '')
     .split('\n')
     .map((item) => item.trim())
     .filter(Boolean);
@@ -183,23 +182,22 @@ export default function HomeScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const savedData = await AsyncStorage.getItem(
-          'sa_dommu_mea_data'
-        );
+        const savedData = await AsyncStorage.getItem('sa_dommu_mea_data');
 
-        if (savedData) {
-          const parsed = JSON.parse(savedData);
+        if (!savedData) {
+          return;
+        }
 
+        const parsed = JSON.parse(savedData);
+
+        if (parsed && typeof parsed === 'object') {
           setData({
             ...defaultData,
             ...parsed,
           });
         }
       } catch (error) {
-        console.log(
-          'Errore caricamento dati:',
-          error
-        );
+        console.log('Errore caricamento dati:', error);
       }
     };
 
@@ -209,9 +207,7 @@ export default function HomeScreen() {
   const toggleFavorite = (name: string) => {
     setFavorites((current) =>
       current.includes(name)
-        ? current.filter(
-            (item) => item !== name
-          )
+        ? current.filter((item) => item !== name)
         : [...current, name]
     );
   };
@@ -221,50 +217,31 @@ export default function HomeScreen() {
       /(?:TELEFONO|TEL|PHONE)\s*:\s*(.*)/i
     );
 
-    const phone =
-      phoneMatch?.[1]?.trim() ||
-      '+39 3491870078';
+    const phone = phoneMatch?.[1]?.trim() || '+39 3491870078';
 
-    Linking.openURL(
-      `tel:${phone.replace(/\s/g, '')}`
-    );
+    Linking.openURL(`tel:${phone.replace(/\s/g, '')}`);
   };
 
   const openMaps = () => {
     Linking.openURL(
-      'https://www.google.com/maps/search/?api=1&query=Sant%27Antioco%20Sardegna'
+      "https://www.google.com/maps/search/?api=1&query=Sant%27Antioco%20Sardegna"
     );
   };
 
-  const restaurants = splitLines(
-    data.restaurants
-  );
+  const openReviewPage = () => {
+    Linking.openURL(
+      "https://www.google.com/maps/search/?api=1&query=SA%20DOMMU%20MEA%20Sant%27Antioco%20Sardegna"
+    );
+  };
 
-  const experiences = splitLines(
-    data.experiences
-  );
+  const restaurants = splitLines(data.restaurants);
+  const experiences = splitLines(data.experiences);
+  const services = splitLines(data.services);
+  const transports = splitLines(data.transports);
+  const sardegnaItems = splitLines(data.sardegna);
+  const infoItems = splitLines(data.info);
 
-  const services = splitLines(
-    data.services
-  );
-
-  const transports = splitLines(
-    data.transports
-  );
-
-  const sardegnaItems = splitLines(
-    data.sardegna
-  );
-
-  const infoItems = splitLines(
-    data.info
-  );
-
-  const menuItems: [
-    string,
-    string,
-    Section
-  ][] = [
+  const menuItems: [string, string, Section][] = [
     ['📶', 'Wi-Fi', 'wifi'],
     ['🏠', 'La casa', 'casa'],
     ['📍', 'Posizione', 'posizione'],
@@ -278,12 +255,10 @@ export default function HomeScreen() {
   ];
 
   const Header = () => {
-    const [adminTaps, setAdminTaps] =
-      useState(0);
+    const [adminTaps, setAdminTaps] = useState(0);
 
     const handleAdminTap = () => {
-      const newCount =
-        adminTaps + 1;
+      const newCount = adminTaps + 1;
 
       if (newCount >= 5) {
         setAdminTaps(0);
@@ -300,30 +275,18 @@ export default function HomeScreen() {
 
     return (
       <View style={styles.header}>
-        <Pressable
-          onPress={handleAdminTap}
-        >
-          <Text
-            style={styles.smallTitle}
-          >
-            BENVENUTO
-          </Text>
+        <Pressable onPress={handleAdminTap}>
+          <Text style={styles.smallTitle}>BENVENUTO</Text>
 
-          <Text style={styles.logo}>
-            SA DOMMU MEA
-          </Text>
+          <Text style={styles.logo}>SA DOMMU MEA</Text>
         </Pressable>
 
         <Pressable
           style={styles.headerHeart}
-          onPress={() =>
-            setSection('preferiti')
-          }
+          onPress={() => setSection('preferiti')}
         >
           <Text style={styles.heartText}>
-            {favorites.length > 0
-              ? '❤️'
-              : '♡'}
+            {favorites.length > 0 ? '❤️' : '♡'}
           </Text>
         </Pressable>
       </View>
@@ -333,13 +296,9 @@ export default function HomeScreen() {
   const BackButton = () => (
     <Pressable
       style={styles.backButton}
-      onPress={() =>
-        setSection('home')
-      }
+      onPress={() => setSection('home')}
     >
-      <Text style={styles.backText}>
-        ← Torna alla home
-      </Text>
+      <Text style={styles.backText}>← Torna alla home</Text>
     </Pressable>
   );
 
@@ -358,19 +317,11 @@ export default function HomeScreen() {
       <BackButton />
 
       <View style={styles.pageHeader}>
-        <Text style={styles.pageIcon}>
-          {icon}
-        </Text>
+        <Text style={styles.pageIcon}>{icon}</Text>
 
-        <Text style={styles.pageTitle}>
-          {title}
-        </Text>
+        <Text style={styles.pageTitle}>{title}</Text>
 
-        <Text
-          style={styles.pageSubtitle}
-        >
-          {text}
-        </Text>
+        <Text style={styles.pageSubtitle}>{text}</Text>
       </View>
 
       {children}
@@ -385,47 +336,32 @@ export default function HomeScreen() {
           style={styles.heroImage}
         />
 
-        <Text style={styles.heroEmoji}>
-          🏖️
-        </Text>
+        <Text style={styles.heroEmoji}>🏖️</Text>
 
         <Text style={styles.heroTitle}>
           Benvenuti a Sa Dommu Mea
         </Text>
 
-        <Text
-          style={styles.heroSubtitle}
-        >
-          La vostra guida digitale
-          per vivere al meglio
-          {'\n'}
-          l'isola di Sant'Antioco
+        <Text style={styles.heroSubtitle}>
+          {'La vostra guida digitale\n'}
+          {'per vivere al meglio\n'}
+          {'l’isola di Sant’Antioco'}
         </Text>
       </View>
 
       <View style={styles.checkRow}>
         <View style={styles.checkCard}>
-          <Text style={styles.cardLabel}>
-            CHECK-IN
-          </Text>
+          <Text style={styles.cardLabel}>CHECK-IN</Text>
 
-          <Text style={styles.cardValue}>
-            {data.checkIn}
-          </Text>
+          <Text style={styles.cardValue}>{data.checkIn}</Text>
         </View>
 
-        <View
-          style={styles.checkDivider}
-        />
+        <View style={styles.checkDivider} />
 
         <View style={styles.checkCard}>
-          <Text style={styles.cardLabel}>
-            CHECK-OUT
-          </Text>
+          <Text style={styles.cardLabel}>CHECK-OUT</Text>
 
-          <Text style={styles.cardValue}>
-            {data.checkOut}
-          </Text>
+          <Text style={styles.cardValue}>{data.checkOut}</Text>
         </View>
       </View>
 
@@ -434,146 +370,85 @@ export default function HomeScreen() {
       </Text>
 
       <View style={styles.grid}>
-        {menuItems.map(
-          ([icon, title, value]) => (
-            <Pressable
-              key={value}
-              style={styles.menuCard}
-              onPress={() =>
-                setSection(value)
-              }
-            >
-              <Text
-                style={styles.menuIcon}
-              >
-                {icon}
-              </Text>
+        {menuItems.map(([icon, title, value]) => (
+          <Pressable
+            key={value}
+            style={styles.menuCard}
+            onPress={() => setSection(value)}
+          >
+            <Text style={styles.menuIcon}>{icon}</Text>
 
-              <Text
-                style={styles.menuTitle}
-              >
-                {title}
-              </Text>
-            </Pressable>
-          )
-        )}
+            <Text style={styles.menuTitle}>{title}</Text>
+          </Pressable>
+        ))}
       </View>
 
       <Pressable
-        style={styles.largeCard}
-        onPress={() =>
-          setSection('sardegna')
-        }
+        style={styles.featureCard}
+        onPress={() => setSection('sardegna')}
       >
-        <Text
-          style={styles.largeEmoji}
-        >
-          🗺️
-        </Text>
+        <Image
+          source={require('../../assets/images/Su Portixeddu.jpg')}
+          style={styles.featureImage}
+        />
 
-        <View style={styles.largeInfo}>
-          <Text
-            style={styles.largeTitle}
-          >
+        <View style={styles.featureInfo}>
+          <Text style={styles.largeTitle}>
             Scopri la Sardegna
           </Text>
 
-          <Text
-            style={styles.largeText}
-          >
-            Spiagge, borghi, natura ed
-            esperienze da non perdere
+          <Text style={styles.largeText}>
+            Spiagge, borghi, natura ed esperienze da non perdere
           </Text>
         </View>
       </Pressable>
 
       <Pressable
-        style={styles.largeCard}
-        onPress={() =>
-          setSection('ristoranti')
-        }
+        style={styles.featureCard}
+        onPress={() => setSection('ristoranti')}
       >
-        <Text
-          style={styles.largeEmoji}
-        >
-          🍽️
-        </Text>
+        <View style={styles.featureEmojiBox}>
+          <Text style={styles.largeEmoji}>🍽️</Text>
+        </View>
 
-        <View style={styles.largeInfo}>
-          <Text
-            style={styles.largeTitle}
-          >
+        <View style={styles.featureInfo}>
+          <Text style={styles.largeTitle}>
             Dove mangiare
           </Text>
 
-          <Text
-            style={styles.largeText}
-          >
-            I nostri suggerimenti per
-            assaporare la cucina locale
+          <Text style={styles.largeText}>
+            I nostri suggerimenti per assaporare la cucina locale
           </Text>
         </View>
       </Pressable>
 
-      {data.cenaSardaAttiva
-        .toLowerCase() ===
-        'true' && (
-        <View
-          style={styles.cenaSardaCard}
-        >
+      {data.cenaSardaAttiva.toLowerCase() === 'true' && (
+        <View style={styles.cenaSardaCard}>
           <Image
             source={require('../../assets/images/Maialino.jpg')}
-            style={
-              styles.cenaSardaImage
-            }
+            style={styles.cenaSardaImage}
           />
 
-          <Text
-            style={
-              styles.cenaSardaBadge
-            }
-          >
+          <Text style={styles.cenaSardaBadge}>
             🍷 SU PRENOTAZIONE
           </Text>
 
-          <Text
-            style={
-              styles.cenaSardaTitle
-            }
-          >
+          <Text style={styles.cenaSardaTitle}>
             {data.cenaSardaTitolo}
           </Text>
 
-          <Text
-            style={
-              styles.cenaSardaDescription
-            }
-          >
+          <Text style={styles.cenaSardaDescription}>
             {data.cenaSardaDescrizione}
           </Text>
 
-          <View
-            style={
-              styles.cenaSardaInfo
-            }
-          >
-            <Text
-              style={
-                styles.cenaSardaLabel
-              }
-            >
-              MENU
-            </Text>
+          <View style={styles.cenaSardaInfo}>
+            <Text style={styles.cenaSardaLabel}>MENU</Text>
 
-            {splitLines(
-              data.cenaSardaMenu
-            ).map(
+            {splitLines(data.cenaSardaMenu).map(
               (item, index) => (
                 <Text
                   key={`${item}-${index}`}
-                  style={
-                    styles.cenaSardaItem
-                  }
+                  style={styles.cenaSardaItem}
                 >
                   • {item}
                 </Text>
@@ -581,30 +456,17 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {data.cenaSardaPrezzo.trim() !==
-            '' && (
-            <Text
-              style={
-                styles.cenaSardaPrice
-              }
-            >
+          {data.cenaSardaPrezzo.trim() !== '' && (
+            <Text style={styles.cenaSardaPrice}>
               {data.cenaSardaPrezzo}
             </Text>
           )}
 
-          <Text
-            style={
-              styles.cenaSardaAvailability
-            }
-          >
+          <Text style={styles.cenaSardaAvailability}>
             📅 {data.cenaSardaGiorni}
           </Text>
 
-          <Text
-            style={
-              styles.cenaSardaContact
-            }
-          >
+          <Text style={styles.cenaSardaContact}>
             📞 {data.cenaSardaContatto}
           </Text>
         </View>
@@ -619,17 +481,13 @@ export default function HomeScreen() {
       text="Collegati alla rete della casa."
     >
       <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>
-          RETE WI-FI
-        </Text>
+        <Text style={styles.infoLabel}>RETE WI-FI</Text>
 
         <Text style={styles.infoValue}>
           {data.wifiName}
         </Text>
 
-        <Text style={styles.infoLabel}>
-          PASSWORD
-        </Text>
+        <Text style={styles.infoLabel}>PASSWORD</Text>
 
         <Text style={styles.infoValue}>
           {data.wifiPassword}
@@ -645,23 +503,53 @@ export default function HomeScreen() {
       text={data.description}
     >
       <Image
+        source={require('../../assets/images/cucina.jpg')}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
         source={require('../../assets/images/cucina1.jpg')}
-        style={styles.houseImage}
+        style={styles.houseImageLarge}
       />
 
       <Image
         source={require('../../assets/images/camera matrimoniale.jpg')}
-        style={styles.houseImage}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
+        source={require('../../assets/images/camera matrimoniale1.jpg')}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
+        source={require('../../assets/images/camera matrimoniale2.jpg')}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
+        source={require('../../assets/images/camera.jpg')}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
+        source={require('../../assets/images/camera1.jpg')}
+        style={styles.houseImageLarge}
       />
 
       <Image
         source={require('../../assets/images/bagno.jpg')}
-        style={styles.houseImage}
+        style={styles.houseImageLarge}
+      />
+
+      <Image
+        source={require('../../assets/images/bagno1.jpg')}
+        style={styles.houseImageLarge}
       />
 
       <Image
         source={require('../../assets/images/porticato.jpg')}
-        style={styles.houseImage}
+        style={styles.houseImageLarge}
       />
 
       {[
@@ -674,14 +562,13 @@ export default function HomeScreen() {
         'TV',
         'Lavatrice',
         'Wi-Fi',
+        'Microonde',
       ].map((item) => (
         <View
           style={styles.listCard}
           key={item}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             ✓ {item}
           </Text>
         </View>
@@ -696,18 +583,14 @@ export default function HomeScreen() {
       text="Trova facilmente SA DOMMU MEA."
     >
       <View style={styles.infoCard}>
-        <Text style={styles.mapEmoji}>
-          📍
-        </Text>
+        <Text style={styles.mapEmoji}>📍</Text>
 
         <Text style={styles.mapTitle}>
           La nostra posizione
         </Text>
 
         <Text style={styles.mapText}>
-          Scopri dove si trova la
-          casa e come muoverti nei
-          dintorni.
+          Scopri dove si trova la casa e come muoverti nei dintorni.
         </Text>
       </View>
 
@@ -715,11 +598,7 @@ export default function HomeScreen() {
         style={styles.primaryButton}
         onPress={openMaps}
       >
-        <Text
-          style={
-            styles.primaryButtonText
-          }
-        >
+        <Text style={styles.primaryButtonText}>
           Apri Google Maps
         </Text>
       </Pressable>
@@ -732,37 +611,23 @@ export default function HomeScreen() {
       title="Ristoranti"
       text="Alcuni suggerimenti per mangiare bene."
     >
-      {restaurants.map(
-        (restaurant) => (
-          <Pressable
-            key={restaurant}
-            style={styles.listCard}
-            onPress={() =>
-              toggleFavorite(
-                restaurant
-              )
-            }
-          >
-            <Text
-              style={styles.listText}
-            >
-              {restaurant}
-            </Text>
+      {restaurants.map((restaurant) => (
+        <Pressable
+          key={restaurant}
+          style={styles.listCard}
+          onPress={() => toggleFavorite(restaurant)}
+        >
+          <Text style={styles.listText}>
+            {restaurant}
+          </Text>
 
-            <Text
-              style={
-                styles.favoriteSmall
-              }
-            >
-              {favorites.includes(
-                restaurant
-              )
-                ? '❤️'
-                : '🤍'}
-            </Text>
-          </Pressable>
-        )
-      )}
+          <Text style={styles.favoriteSmall}>
+            {favorites.includes(restaurant)
+              ? '❤️'
+              : '🤍'}
+          </Text>
+        </Pressable>
+      ))}
     </SimplePage>
   );
 
@@ -776,21 +641,13 @@ export default function HomeScreen() {
         <Pressable
           key={item}
           style={styles.listCard}
-          onPress={() =>
-            toggleFavorite(item)
-          }
+          onPress={() => toggleFavorite(item)}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             {item}
           </Text>
 
-          <Text
-            style={
-              styles.favoriteSmall
-            }
-          >
+          <Text style={styles.favoriteSmall}>
             {favorites.includes(item)
               ? '❤️'
               : '🤍'}
@@ -810,21 +667,13 @@ export default function HomeScreen() {
         <Pressable
           key={item}
           style={styles.listCard}
-          onPress={() =>
-            toggleFavorite(item)
-          }
+          onPress={() => toggleFavorite(item)}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             {item}
           </Text>
 
-          <Text
-            style={
-              styles.favoriteSmall
-            }
-          >
+          <Text style={styles.favoriteSmall}>
             {favorites.includes(item)
               ? '❤️'
               : '🤍'}
@@ -844,21 +693,13 @@ export default function HomeScreen() {
         <Pressable
           key={item}
           style={styles.listCard}
-          onPress={() =>
-            toggleFavorite(item)
-          }
+          onPress={() => toggleFavorite(item)}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             {item}
           </Text>
 
-          <Text
-            style={
-              styles.favoriteSmall
-            }
-          >
+          <Text style={styles.favoriteSmall}>
             {favorites.includes(item)
               ? '❤️'
               : '🤍'}
@@ -876,27 +717,14 @@ export default function HomeScreen() {
     >
       <Pressable
         style={styles.emergencyBig}
-        onPress={() =>
-          Linking.openURL(
-            'tel:112'
-          )
-        }
+        onPress={() => Linking.openURL('tel:112')}
       >
-        <Text
-          style={
-            styles.emergencyBigTitle
-          }
-        >
+        <Text style={styles.emergencyBigTitle}>
           112
         </Text>
 
-        <Text
-          style={
-            styles.emergencyBigText
-          }
-        >
-          Chiama il numero unico
-          di emergenza
+        <Text style={styles.emergencyBigText}>
+          Chiama il numero unico di emergenza
         </Text>
       </Pressable>
     </SimplePage>
@@ -909,18 +737,14 @@ export default function HomeScreen() {
       text="Hai bisogno di assistenza?"
     >
       <View style={styles.infoCard}>
-        {splitLines(
-          data.contacts
-        ).map(
+        {splitLines(data.contacts).map(
           (item, index) => (
             <Text
               key={`${item}-${index}`}
               style={
                 item
                   .toUpperCase()
-                  .includes(
-                    'TELEFONO'
-                  )
+                  .includes('TELEFONO')
                   ? styles.infoValue
                   : styles.contactLine
               }
@@ -935,11 +759,7 @@ export default function HomeScreen() {
         style={styles.primaryButton}
         onPress={openPhone}
       >
-        <Text
-          style={
-            styles.primaryButtonText
-          }
-        >
+        <Text style={styles.primaryButtonText}>
           Chiama
         </Text>
       </Pressable>
@@ -947,13 +767,10 @@ export default function HomeScreen() {
   );
 
   const RecensioniPage = () => {
-    const reviewBlocks =
-      data.reviews
-        .split('\n\n')
-        .map((item) =>
-          item.trim()
-        )
-        .filter(Boolean);
+    const reviewBlocks = data.reviews
+      .split('\n\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
 
     return (
       <SimplePage
@@ -961,24 +778,35 @@ export default function HomeScreen() {
         title="Recensioni"
         text="La tua opinione è importante."
       >
-        {reviewBlocks.map(
-          (review, index) => (
-            <View
-              style={
-                styles.reviewCard
-              }
-              key={`${review}-${index}`}
-            >
-              <Text
-                style={
-                  styles.reviewText
-                }
-              >
-                {review}
-              </Text>
-            </View>
-          )
-        )}
+        {reviewBlocks.map((review, index) => (
+          <View
+            style={styles.reviewCard}
+            key={`${review}-${index}`}
+          >
+            <Text style={styles.reviewText}>
+              {review}
+            </Text>
+          </View>
+        ))}
+
+        <View style={styles.reviewActionCard}>
+          <Text style={styles.reviewActionTitle}>
+            Hai soggiornato da noi?
+          </Text>
+
+          <Text style={styles.reviewActionText}>
+            Ci farebbe piacere conoscere la tua esperienza.
+          </Text>
+
+          <Pressable
+            style={styles.primaryButton}
+            onPress={openReviewPage}
+          >
+            <Text style={styles.primaryButtonText}>
+              ⭐ Lascia una recensione
+            </Text>
+          </Pressable>
+        </View>
       </SimplePage>
     );
   };
@@ -989,79 +817,53 @@ export default function HomeScreen() {
       title="Scopri la Sardegna"
       text="Il tuo punto di partenza per esplorare l'isola."
     >
-      {sardegnaItems.map(
-        (item) => (
-          <Pressable
-            key={item}
-            style={styles.listCard}
-            onPress={() =>
-              toggleFavorite(item)
-            }
-          >
-            <Text
-              style={styles.listText}
-            >
-              {item}
-            </Text>
+      {sardegnaItems.map((item) => (
+        <Pressable
+          key={item}
+          style={styles.listCard}
+          onPress={() => toggleFavorite(item)}
+        >
+          <Text style={styles.listText}>
+            {item}
+          </Text>
 
-            <Text
-              style={
-                styles.favoriteSmall
-              }
-            >
-              {favorites.includes(item)
-                ? '❤️'
-                : '🤍'}
-            </Text>
-          </Pressable>
-        )
-      )}
+          <Text style={styles.favoriteSmall}>
+            {favorites.includes(item)
+              ? '❤️'
+              : '🤍'}
+          </Text>
+        </Pressable>
+      ))}
 
-      <View
-        style={
-          styles.sardegnaImages
-        }
-      >
+      <View style={styles.sardegnaImages}>
         <Image
           source={require('../../assets/images/Su Portixeddu.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
 
         <Image
           source={require('../../assets/images/Coe-Cuaddus.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
 
         <Image
           source={require('../../assets/images/Maladroxia.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
 
         <Image
           source={require('../../assets/images/Maladroxia1.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
 
         <Image
           source={require('../../assets/images/Cala-Sapone.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
 
         <Image
           source={require('../../assets/images/Cala-Sapone1.jpg')}
-          style={
-            styles.sardegnaImage
-          }
+          style={styles.sardegnaImageLarge}
         />
       </View>
     </SimplePage>
@@ -1074,27 +876,17 @@ export default function HomeScreen() {
       text="Qui trovi ciò che hai salvato."
     >
       {favorites.length === 0 ? (
-        <View
-          style={styles.emptyCard}
-        >
-          <Text
-            style={styles.emptyIcon}
-          >
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyIcon}>
             🤍
           </Text>
 
-          <Text
-            style={styles.emptyTitle}
-          >
+          <Text style={styles.emptyTitle}>
             Nessun preferito
           </Text>
 
-          <Text
-            style={styles.emptyText}
-          >
-            Tocca il cuore vicino
-            ai tuoi luoghi preferiti
-            per salvarli qui.
+          <Text style={styles.emptyText}>
+            Tocca il cuore vicino ai tuoi luoghi preferiti per salvarli qui.
           </Text>
         </View>
       ) : (
@@ -1102,21 +894,13 @@ export default function HomeScreen() {
           <Pressable
             key={item}
             style={styles.listCard}
-            onPress={() =>
-              toggleFavorite(item)
-            }
+            onPress={() => toggleFavorite(item)}
           >
-            <Text
-              style={styles.listText}
-            >
+            <Text style={styles.listText}>
               {item}
             </Text>
 
-            <Text
-              style={
-                styles.favoriteSmall
-              }
-            >
+            <Text style={styles.favoriteSmall}>
               ❤️
             </Text>
           </Pressable>
@@ -1136,15 +920,11 @@ export default function HomeScreen() {
           💬
         </Text>
 
-        <Text
-          style={styles.emptyTitle}
-        >
+        <Text style={styles.emptyTitle}>
           Messaggi
         </Text>
 
-        <Text
-          style={styles.emptyText}
-        >
+        <Text style={styles.emptyText}>
           {data.messages}
         </Text>
       </View>
@@ -1162,9 +942,7 @@ export default function HomeScreen() {
           style={styles.listCard}
           key={item}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             {item}
           </Text>
         </View>
@@ -1178,16 +956,12 @@ export default function HomeScreen() {
       title="Impostazioni"
       text="Personalizza la tua esperienza."
     >
-      {splitLines(
-        data.settings
-      ).map((item) => (
+      {splitLines(data.settings).map((item) => (
         <View
           style={styles.listCard}
           key={item}
         >
-          <Text
-            style={styles.listText}
-          >
+          <Text style={styles.listText}>
             {item}
           </Text>
         </View>
@@ -1198,9 +972,7 @@ export default function HomeScreen() {
           ❤️ Preferiti
         </Text>
 
-        <Text
-          style={styles.settingValue}
-        >
+        <Text style={styles.settingValue}>
           {favorites.length}
         </Text>
       </View>
@@ -1254,60 +1026,43 @@ export default function HomeScreen() {
       case 'impostazioni':
         return <ImpostazioniPage />;
 
+      case 'home':
       default:
         return <HomePage />;
     }
   };
 
   return (
-    <SafeAreaView
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
 
       <Header />
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={
-          styles.content
-        }
-        showsVerticalScrollIndicator={
-          false
-        }
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
         {renderSection()}
 
         <Pressable
           style={styles.adminButton}
-          onPress={() =>
-            router.push(
-              '/admin-access'
-            )
-          }
+          onPress={() => router.push('/admin-access')}
         >
-          <Text
-            style={
-              styles.adminButtonText
-            }
-          >
+          <Text style={styles.adminButtonText}>
             ⚙️ Area proprietario
           </Text>
         </Pressable>
 
         <View style={styles.footer}>
-          <Text
-            style={styles.footerLogo}
-          >
+          <Text style={styles.footerLogo}>
             SA DOMMU MEA
           </Text>
 
-          <Text
-            style={styles.footerText}
-          >
-            La tua casa. La tua
-            esperienza. La tua
-            Sardegna.
+          <Text style={styles.footerText}>
+            {'La tua casa. La tua\n'}
+            {'esperienza. La tua\n'}
+            {'Sardegna.'}
           </Text>
         </View>
       </ScrollView>
@@ -1475,35 +1230,45 @@ const styles = StyleSheet.create({
     color: '#35453A',
   },
 
-  largeCard: {
+  featureCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    padding: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: 12,
   },
 
-  largeEmoji: {
-    fontSize: 38,
-    marginRight: 19,
+  featureImage: {
+    width: '100%',
+    height: 190,
   },
 
-  largeInfo: {
-    flex: 1,
+  featureEmojiBox: {
+    width: '100%',
+    height: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F7F3EC',
+  },
+
+  largeEmoji: {
+    fontSize: 42,
+  },
+
+  featureInfo: {
+    padding: 18,
   },
 
   largeTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
     color: '#2F4638',
   },
 
   largeText: {
     color: '#777064',
-    fontSize: 13,
-    lineHeight: 19,
-    marginTop: 3,
+    fontSize: 14,
+    lineHeight: 20,
+    marginTop: 5,
   },
 
   cenaSardaCard: {
@@ -1664,9 +1429,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  houseImage: {
+  houseImageLarge: {
     width: '100%',
-    height: 300,
+    height: 360,
     borderRadius: 18,
     marginBottom: 15,
   },
@@ -1748,18 +1513,36 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
 
+  reviewActionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+    marginBottom: 15,
+  },
+
+  reviewActionTitle: {
+    color: '#2F4638',
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 7,
+  },
+
+  reviewActionText: {
+    color: '#777064',
+    fontSize: 14,
+    lineHeight: 21,
+    marginBottom: 15,
+  },
+
   sardegnaImages: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
     marginTop: 8,
   },
 
-  sardegnaImage: {
-    width: '48%',
-    height: 170,
-    borderRadius: 15,
-    marginBottom: 12,
+  sardegnaImageLarge: {
+    width: '100%',
+    height: 280,
+    borderRadius: 18,
+    marginBottom: 14,
   },
 
   emptyCard: {
